@@ -1,104 +1,113 @@
-<style>        
 body {
-            text-align: center;
-        }
+    text-align: center;
+}
 
-        #toolbox {
-            float: none;
-            background: #d3d3d3;
-            margin: 5px;
-            position: fixed;
-            width: 90%;
-            height: auto;
-            border: solid;
-            padding: 5px;
-        }
+#toolbox {
+    float: none;
+    background: #d3d3d3;
+    margin: 5px;
+    position: fixed;
+    width: 90%;
+    height: auto;
+    border: solid;
+    padding: 5px;
+}
 
-        div {
-            width: 20px;
-            height: 20px;
-            float: left;
-        }
+div {
+    width: 20px;
+    height: 20px;
+    float: left;
+}
 
-        #text {
-            margin-right: 10px;
-            width: auto;
-        }
+#text {
+    margin-right: 10px;
+    width: auto;
+}
 
-        #colors,
-        #lines,
-        #info {
-            width: auto;
-            margin: 0 5px;
-        }
+#colors,
+#lines,
+#info {
+    width: auto;
+    margin: 0 5px;
+}
 
-        #black,
-        #white {
-            margin-right: 10px;
-        }
+#black,
+#white {
+    margin-right: 10px;
+}
 
-        #saveIMG {
-            float: right
-        }
+#saveIMG {
+    float: right
+}
 
-        #chat {
-            background: #d3d3d3;
-            display: block;
-            position: fixed;
-            right: 0;
-            bottom: 0;
-            width: 200px;
-            height: 300px;
-        }
+#chatWindow {
+    background: #d3d3d3;
+    display: block;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: 200px;
+    height: 300px;
+}
 
-        #chatHeader,
-        #chatConv,
-        #typingplace {
-            width: inherit;
+#chatHeader,
+#chat,
+#typingplace {
+    width: inherit;
+}
 
-        }
+#collapsable {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    text-align: left;
 
-        #typingplace {
-            margin-top: 0;
-            width: auto;
-            overflow: hidden;
+}
 
-        }
+#typingplace {
+    margin: 1px auto;
+    display: block;
+    width: 90%;
+    overflow: hidden;
+    text-align: left;
 
-        #chatHeader {
-            background: #6EC5E9;
-        }
+}
 
-        #chatConv {
-            height: 250px;
-            padding: 0;
-            list-style: none;
-            overflow-x: hidden;
-            overflow-y: scroll;
-            margin-bottom: 0;
-        }
+#chatHeader {
+    padding: 1px;
+    background: #6EC5E9;
+    text-align: center;
+}
 
-        i {
-            width: 25px;
-            height: 25px;
-            display: inline-block;
-            margin: 0;
-            padding: 0;
-            background-size: 25px;
-            background-repeat: no-repeat;
-        }
+#chat {
+    height: 250px;
+    padding: 0;
+    list-style: none;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin: 0 0;
+}
 
-        #name {
-            display: block;
-            margin-left: 5px;
-            text-align: left;
-            font-size: 10px;
-            width: 100%;
-            height: auto;
-        }
+i {
+    width: 25px;
+    height: 25px;
+    display: block;
+    margin: 0;
+    padding: 0;
+    background-size: 25px;
+    background-repeat: no-repeat;
+}
 
-        #message {
-            width: 100%;
-            height: auto;
-        }
-</style>
+#name {
+    display: block;
+    margin-left: 5px;
+    font-size: 10px;
+    width: 100%;
+    height: auto;
+}
+
+#message {
+    width: 100%;
+    margin: 2px 5px;
+    height: auto;
+}

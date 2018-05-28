@@ -1,8 +1,9 @@
 window.addEventListener('load', init, false)
 let socket
-let slider
+let slider, toolbox, info
+let allowedToDraw = true
 let connected, started = false
-let typePlace, chatHeader
+let typePlace, chatHeader, collapsable, chatWindow, chat
 let lineToDraw = {
     curr: {
         X: 0,
@@ -22,6 +23,7 @@ function setup() {
     let cnv = createCanvas(2500, 2500)
     cnv.style('border', 'solid');
     background(255)
+
 }
 
 function mouseMoved() {
@@ -31,26 +33,32 @@ function mouseMoved() {
 }
 
 function mouseDragged() {
+    if (mouseIsPressed && mouseButton === "center") return
+    if (!allowedToDraw) return
     if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return
     if (!started) {
         lineToDraw.prev = lineToDraw.curr
         started = true
     }
     drawLine()
+    socket.emit("draw", lineToDraw)
+    lineToDraw.prev = {
+        X: mouseX,
+        Y: mouseY
+    }
 }
+
 
 function mouseReleased() {
     started = false
 }
 
-function drawLine() {
-    stroke(color(lineToDraw.color))
-    strokeWeight(lineToDraw.width)
-    line(mouseX, mouseY, lineToDraw.prev.X, lineToDraw.prev.Y)
-    lineToDraw.prev = {
-        X: mouseX,
-        Y: mouseY
-    }
+function drawLine(l) {
+    if (!l) l = lineToDraw
+    stroke(color(l.color))
+    strokeWeight(l.width)
+    line(l.curr.X, l.curr.Y, lineToDraw.prev.X, lineToDraw.prev.Y)
+
 }
 //-----------------------------
 
@@ -59,18 +67,14 @@ function drawLine() {
 //-----------------------------
 function init() {
     socket = io()
-    connected = true
     loadDOMelements()
     addEventListeners()
     updateInfo()
     addSocketListeners()
+    socket.emit("userConnect", REST('GET', 'https://api.ipify.org?format=json'))
+    connected = true
 }
 
-function lineWidth() {
-    console.log(slider.value)
-    lineToDraw.width = slider.value
-    updateInfo()
-}
 
 function changeColor(obj) {
     lineToDraw.color = obj.id
@@ -84,19 +88,41 @@ function updateInfo() {
 }
 
 function loadDOMelements() {
+    toolbox = document.getElementById("toolbox")
     info = document.getElementById("info")
     slider = document.getElementById("slider")
     typePlace = document.getElementById("typingplace")
     chatHeader = document.getElementById("chatHeader")
+    collapsable = document.getElementById("collapsable")
+    chatWindow = document.getElementById("chatWindow")
+    chat = document.getElementById("chat")
     updateScroll()
 }
 
 function addEventListeners() {
     typePlace.addEventListener("keyup", event => {
         if (event.key === "Enter") {
-            //send message
+            socket.emit("messageback", {
+                id: socket.id,
+                m: typePlace.value
+            })
+            typePlace.value = ""
         }
     })
+
+    slider.addEventListener("mouseover", () => {
+        allowedToDraw = false
+    })
+    slider.addEventListener("mouseleave", () => {
+        allowedToDraw = true
+    })
+    chatWindow.addEventListener("mouseover", () => {
+        allowedToDraw = false
+    })
+    chatWindow.addEventListener("mouseleave", () => {
+        allowedToDraw = true
+    })
+
     document.getElementById("btnErase").addEventListener('click', () => {
         socket.emit('delete')
         noStroke()
@@ -107,24 +133,42 @@ function addEventListeners() {
         socket.emit("saved")
         saveCanvas("image")
     })
-    slider.addEventListener("change", lineWidth, false)
+    slider.addEventListener("change", () => {
+        lineToDraw.width = slider.value
+        updateInfo()
+    })
+    let chatCollapsed = false
+    chatHeader.addEventListener("click", () => {
+        if (chatCollapsed) {
+            collapsable.style.display = "block"
+            chatWindow.style.height = "300px"
+        } else {
+            collapsable.style.display = "none"
+            chatWindow.style.height = "25px"
+        }
+        chatCollapsed = !chatCollapsed;
+    })
 }
 
 function addSocketListeners() {
-    socket.on("line", (rLine) => {
-        receiveDraw(rLine)
+    socket.on("draw", (rLine) => {
+        drawLine(rLine)
     })
     socket.on("delete", () => {
         fill(255)
         noStroke()
         rect(0, 0, width, height)
     })
+    socket.on("message", m => {
+        chat.innerHTML += '<li ><div id = "name" > <i class="' + m.flag + '"></i> ' + m.name + '</div> <div id = "message" > ' + m.message + '</div> <hr> </li>'
+        updateScroll()
+    })
 }
 
 
 
 function updateScroll() {
-    var element = document.getElementById("chatConv");
+    var element = document.getElementById("chat");
     element.scrollTop = element.scrollHeight;
 }
 
@@ -136,6 +180,7 @@ function REST(method, url, message) {
         xhttp.send(message)
     else
         xhttp.send()
+    console.log(xhttp.responseText)
     return JSON.parse(xhttp.responseText)
 
 }
