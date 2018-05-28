@@ -1,0 +1,81 @@
+<html>
+<header>
+    <link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js"></script>
+    <script src="p5.js"></script>
+    <script src="p5.dom.js"></script>
+    <script src="sketch.js"></script>
+
+</header>
+
+<body>
+    <div id="toolbox">
+        <div id="colors">
+            <div id="text">Choose Color</div>
+            <div id="green" onclick="changeColor(this)" style="background:green"></div>
+            <div id="blue" onclick="changeColor(this)" style="background:blue"></div>
+            <div id="red" onclick="changeColor(this)" style="background:red"></div>
+            <div id="yellow" onclick="changeColor(this)" style="background:yellow"></div>
+            <div id="orange" onclick="changeColor(this)" style="background:orange"></div>
+            <div id="black" onclick="changeColor(this)" style="background:black"></div>
+            <div id="text">Eraser</div>
+            <div id="white" onclick="changeColor(this)" style="background:white"></div>
+            <input type="button" id="btnErase" value="erase all">
+        </div>
+        <div id="lines">
+            <div id="text">linewidth:</div>
+            <input type="range" id="slider" min="1" max="50" step="1" value="2">
+        </div>
+        <input type="button" id="saveIMG" value="Save Image">
+        <div id="info"></div>
+
+    </div>
+    <div id="chat">
+        <div id="chatHeader"> Chat </div>
+        <ul id="chatConv">
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+            <li>
+                <div id="name">FLAG : name</div> <br>
+                <div id="message">message</div>
+                <hr> </li>
+        </ul>
+        <input type="text" placeholder="Message" id="typingplace">
+    </div>
+
+
+
+</body>
+
+</html>
