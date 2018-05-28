@@ -14,6 +14,7 @@ app.use(express.static('client'))
 app.use('/', express.static(__dirname))
 
 let users = []
+let messages = []
 let lines = []
 io.on('connection', function (socket) {
     socket.on('userConnect', (ip) => { //using ip to get country for flag emoji
@@ -28,13 +29,22 @@ io.on('connection', function (socket) {
     })
 
     socket.on('disconnect', () => {
-        log(users.find(x => x.id === socket.id).name + ' disconnected')
+        let u = users.find(x => x.id === socket.id)
+        let name = "-"
+        if (u) name = u.name
+        log(name + ' disconnected')
+        io.emit('logout', name)
         users = users.filter(x => x.id !== socket.id)
     })
 
-    socket.on("login", (log) => {
+    socket.on("login", (login) => {
         let u = users.find(x => x.id === socket.id)
-        u.name = log.m
+        if (!u) return
+        if (login.m.length > 25) login.m = "too long"
+        login.m = he.encode(login.m)
+        log(login.m + " logged in")
+        u.name = login.m
+        io.emit("login", login.m)
     })
 
     socket.on('draw', (line) => {
@@ -48,20 +58,30 @@ io.on('connection', function (socket) {
 
     socket.on('message', message => {
         let u = users.find(x => x.id === message.id)
+        if (!u) return
         message.m = he.encode(message.m)
-        if (message.m.length < 250) message.m = u.name + " tried to spam"
+        if (message.m.length > 250) message.m = u.name + " tried to spam"
         log(u.name + ": " + message.m)
-        io.emit("message", {
+
+        message = {
             flag: u.flag,
             name: u.name,
             message: message.m
-        })
+        }
+        io.emit("message", message)
+        messages.push(message)
     })
 
     app.get('/api/lines', function (req, res) {
         log("requested lines: length " + lines.length)
         res.status(200).json({
             data: lines
+        });
+    });
+    app.get('/api/messages', function (req, res) {
+        log("requested messages: length " + messages.length)
+        res.status(200).json({
+            data: messages
         });
     });
 

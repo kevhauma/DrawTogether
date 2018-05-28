@@ -15,7 +15,8 @@ let lineToDraw = {
         Y: 0
     },
     width: 2,
-    color: "black"
+    color: "black",
+    shape: "line"
 }
 
 // P5 drawing stuff
@@ -58,14 +59,28 @@ function mouseReleased() {
 }
 
 function drawLine(l) {
-    stroke(color(l.color))
-    strokeWeight(l.width)
-    line(l.curr.X, l.curr.Y, l.prev.X, l.prev.Y)
-    l.prev = {
-        X: mouseX,
-        Y: mouseY
+    switch (l.shape) {
+        case "line":
+            stroke(color(l.color))
+            strokeWeight(l.width)
+            line(l.curr.X, l.curr.Y, l.prev.X, l.prev.Y)
+            l.prev = {
+                X: mouseX,
+                Y: mouseY
+            }
+            break
+        case "rect":
+            rectMode(CENTER)
+            fill(color(l.color))
+            noStroke()
+            rect(l.curr.X, l.curr.Y, l.width, l.width)
+            break
+        case "circ":
+            ellipseMode(CENTER)
+            fill(color(l.color))
+            noStroke()
+            ellipse(l.curr.X, l.curr.Y, parseInt(l.width))
     }
-
 
 }
 //-----------------------------
@@ -79,9 +94,17 @@ function init() {
     addEventListeners()
     updateInfo()
     loggingIn(false)
-    addSocketListeners()
+
     socket.emit("userConnect", REST('GET', 'https://api.ipify.org?format=json'))
+    let mes = REST('GET', '/api/messages').data
+    for (let i = 0; i < mes.length; i++) {
+        let m = mes[i]
+        chat.innerHTML += '<li ><div id = "name" > <i class="' + m.flag + '"></i> ' + m.name + '</div> <div id = "message" > ' + m.message + '</div> <hr> </li>'
+    }
+    updateScroll()
+
     connected = true
+    addSocketListeners()
 }
 
 
@@ -126,12 +149,14 @@ function addEventListeners() {
     })
     login.addEventListener("keyup", event => {
         if (event.key === "Enter") {
-            socket.emit("login", {
-                id: socket.id,
-                m: login.value
-            })
-            login.value = ""
-            loggingIn(true)
+            if (connected) {
+                socket.emit("login", {
+                    id: socket.id,
+                    m: login.value
+                })
+                login.value = ""
+                loggingIn(true)
+            }
         }
     })
     picker.addEventListener("change", () => {
@@ -164,7 +189,7 @@ function addEventListeners() {
         lineToDraw.width = slider.value
         updateInfo()
     })
-    let chatCollapsed = false
+    let chatCollapsed = true
     chatHeader.addEventListener("click", () => {
         if (chatCollapsed) {
             collapsable.style.display = "block"
@@ -186,8 +211,15 @@ function addSocketListeners() {
         noStroke()
         rect(0, 0, width, height)
     })
+    socket.on("login", login => {
+        chat.innerHTML += '<li> <div id="metaChat">' + login + ' logged in </div><hr></li>'
+    })
+    socket.on("logout", logout => {
+        chat.innerHTML += '<li> <div id="metaChat">' + logout + ' logged out</div> <hr></li>'
+    })
     socket.on("message", m => {
-        chat.innerHTML += '<li ><div id = "name" > <i class="' + m.flag + '"></i> ' + m.name + '</div> <div id = "message" > ' + m.message + '</div> <hr> </li>'
+        chat.innerHTML += '<li ><div id = "name" > <i class="' + m.flag +
+            '"></i> ' + m.name + '</div> <div id = "message" > ' + m.message + '</div> <hr> </li>'
         updateScroll()
     })
 }
