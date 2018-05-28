@@ -21,16 +21,20 @@ io.on('connection', function (socket) {
             id: socket.id,
             ip: ip.ip
         }
-        u.name = ip.name || "unknown"
         let country = geoip.lookup(u.ip).country
         u.flag = flags.find(x => x.em === country.toLocaleLowerCase()).afeld
-        log(u.name + " connected")
+        log(u.ip + " connected (" + u.flag + ")")
         users.push(u)
     })
 
     socket.on('disconnect', () => {
         log(users.find(x => x.id === socket.id).name + ' disconnected')
         users = users.filter(x => x.id !== socket.id)
+    })
+
+    socket.on("login", (log) => {
+        let u = users.find(x => x.id === socket.id)
+        u.name = log.m
     })
 
     socket.on('draw', (line) => {
@@ -42,9 +46,10 @@ io.on('connection', function (socket) {
         io.emit('delete')
     })
 
-    socket.on('messageback', message => {
-        console.log(message)
+    socket.on('message', message => {
         let u = users.find(x => x.id === message.id)
+        message.m = he.encode(message.m)
+        if (message.m.length < 250) message.m = u.name + " tried to spam"
         log(u.name + ": " + message.m)
         io.emit("message", {
             flag: u.flag,
@@ -53,8 +58,8 @@ io.on('connection', function (socket) {
         })
     })
 
-
     app.get('/api/lines', function (req, res) {
+        log("requested lines: length " + lines.length)
         res.status(200).json({
             data: lines
         });

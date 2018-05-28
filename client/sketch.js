@@ -1,8 +1,9 @@
 window.addEventListener('load', init, false)
 let socket
-let slider, toolbox, info
+let slider, toolbox, info, picker, login
 let allowedToDraw = true
-let connected, started = false
+let connected, started = false,
+    loggedIn = false
 let typePlace, chatHeader, collapsable, chatWindow, chat
 let lineToDraw = {
     curr: {
@@ -24,6 +25,10 @@ function setup() {
     cnv.style('border', 'solid');
     background(255)
 
+    let lines = REST("GET", "/api/lines").data
+    for (let i = 0; i < lines.length; i++)
+        drawLine(lines[i])
+
 }
 
 function mouseMoved() {
@@ -33,31 +38,34 @@ function mouseMoved() {
 }
 
 function mouseDragged() {
+    if (!connected || !loggedIn || !allowedToDraw) return
     if (mouseIsPressed && mouseButton === "center") return
-    if (!allowedToDraw) return
     if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return
     if (!started) {
         lineToDraw.prev = lineToDraw.curr
         started = true
     }
-    drawLine()
+    lineToDraw.curr.X = mouseX
+    lineToDraw.curr.Y = mouseY
     socket.emit("draw", lineToDraw)
-    lineToDraw.prev = {
-        X: mouseX,
-        Y: mouseY
-    }
-}
+    drawLine(lineToDraw)
+    updateInfo()
 
+}
 
 function mouseReleased() {
     started = false
 }
 
 function drawLine(l) {
-    if (!l) l = lineToDraw
     stroke(color(l.color))
     strokeWeight(l.width)
-    line(l.curr.X, l.curr.Y, lineToDraw.prev.X, lineToDraw.prev.Y)
+    line(l.curr.X, l.curr.Y, l.prev.X, l.prev.Y)
+    l.prev = {
+        X: mouseX,
+        Y: mouseY
+    }
+
 
 }
 //-----------------------------
@@ -70,6 +78,7 @@ function init() {
     loadDOMelements()
     addEventListeners()
     updateInfo()
+    loggingIn(false)
     addSocketListeners()
     socket.emit("userConnect", REST('GET', 'https://api.ipify.org?format=json'))
     connected = true
@@ -78,8 +87,10 @@ function init() {
 
 function changeColor(obj) {
     lineToDraw.color = obj.id
-    if (obj.id == "white") lineToDraw.width = 14
-    else lineToDraw.width = slider.value
+    if (obj.id == "white") {
+        lineToDraw.width = 50;
+        slider.value = 50
+    } else lineToDraw.width = slider.value
     updateInfo()
 }
 
@@ -91,25 +102,41 @@ function loadDOMelements() {
     toolbox = document.getElementById("toolbox")
     info = document.getElementById("info")
     slider = document.getElementById("slider")
+    picker = document.getElementById("picker")
     typePlace = document.getElementById("typingplace")
     chatHeader = document.getElementById("chatHeader")
     collapsable = document.getElementById("collapsable")
     chatWindow = document.getElementById("chatWindow")
     chat = document.getElementById("chat")
+    login = document.getElementById("login")
     updateScroll()
 }
 
 function addEventListeners() {
     typePlace.addEventListener("keyup", event => {
         if (event.key === "Enter") {
-            socket.emit("messageback", {
-                id: socket.id,
-                m: typePlace.value
-            })
-            typePlace.value = ""
+            if (loggedIn) {
+                socket.emit("message", {
+                    id: socket.id,
+                    m: typePlace.value
+                })
+                typePlace.value = ""
+            }
         }
     })
-
+    login.addEventListener("keyup", event => {
+        if (event.key === "Enter") {
+            socket.emit("login", {
+                id: socket.id,
+                m: login.value
+            })
+            login.value = ""
+            loggingIn(true)
+        }
+    })
+    picker.addEventListener("change", () => {
+        lineToDraw.color = picker.value
+    })
     slider.addEventListener("mouseover", () => {
         allowedToDraw = false
     })
@@ -165,6 +192,18 @@ function addSocketListeners() {
     })
 }
 
+function loggingIn(b) {
+    let con = document.getElementById("connected")
+    let discon = document.getElementById("notConnected")
+    if (b) {
+        con.style.display = "block"
+        discon.style.display = "none"
+    } else {
+        con.style.display = "none"
+        discon.style.display = "block"
+    }
+    loggedIn = b
+}
 
 
 function updateScroll() {
@@ -180,7 +219,6 @@ function REST(method, url, message) {
         xhttp.send(message)
     else
         xhttp.send()
-    console.log(xhttp.responseText)
     return JSON.parse(xhttp.responseText)
 
 }
