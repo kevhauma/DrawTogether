@@ -1,4 +1,5 @@
 window.addEventListener('load', init, false)
+
 let socket
 let slider, toolbox, info, picker, login
 let allowedToDraw = true
@@ -22,7 +23,7 @@ let lineToDraw = {
 // P5 drawing stuff
 //-----------------------------
 function setup() {
-    let cnv = createCanvas(2500, 2500)
+    let cnv = createCanvas(3200, 1800)
     cnv.style('border', 'solid');
     background(255)
 
@@ -31,31 +32,56 @@ function setup() {
         drawLine(lines[i])
 
 }
-
-function mouseMoved() {
-    lineToDraw.curr.X = mouseX
-    lineToDraw.curr.Y = mouseY
-    updateInfo()
+//mouse input
+//----------------------
+function mouseDragged() {
+    if (touches.length > 0) return
+    drawing(mouseX, mouseY)
 }
 
-function mouseDragged() {
-    if (!connected || !loggedIn || !allowedToDraw) return
-    if (mouseIsPressed && mouseButton === "center") return
-    if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return
-    if (!started) {
-        lineToDraw.prev = lineToDraw.curr
-        started = true
-    }
-    lineToDraw.curr.X = mouseX
-    lineToDraw.curr.Y = mouseY
-    socket.emit("draw", lineToDraw)
-    drawLine(lineToDraw)
-    updateInfo()
-
+function mousePressed() {
+    lineToDraw.prev = lineToDraw.curr
+    started = true
 }
 
 function mouseReleased() {
     started = false
+}
+//---------------------
+
+//touch input
+//---------------------
+function touchMoved() {
+    if (touches.length > 1) return
+    drawing(touches[0].x, touches[0].y)
+}
+
+function touchStarted() {
+    if (touches.length > 0) {
+        lineToDraw.prev = {
+            x: touches[0].x,
+            y: touches[0].y
+        }
+        started = true
+    }
+}
+
+function touchEnded() {
+    started = false
+}
+//---------------------
+
+function drawing(x, y) {
+    if (!connected || !loggedIn || !allowedToDraw) return
+    if (mouseIsPressed && mouseButton === "center") return
+    if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return
+    lineToDraw.curr.X = x
+    lineToDraw.curr.Y = y
+
+    console.log(`from (${lineToDraw.prev.x},${lineToDraw.prev.y}) to  (${lineToDraw.curr.x},${lineToDraw.curr.y})`)
+    drawLine(lineToDraw)
+    socket.emit("draw", lineToDraw)
+    updateInfo()
 }
 
 function drawLine(l) {
@@ -118,7 +144,7 @@ function changeColor(obj) {
 }
 
 function updateInfo() {
-    info.innerHTML = `(${Math.floor(lineToDraw.curr.X)},${Math.floor(lineToDraw.curr.Y)}) color: ${lineToDraw.color} - width ${lineToDraw.width}`
+    info.innerHTML = `color: ${lineToDraw.color} - width ${lineToDraw.width}`
 }
 
 function loadDOMelements() {

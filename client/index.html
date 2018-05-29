@@ -1,31 +1,31 @@
 <html>
 <header>
     <link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Fira+Sans" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js"></script>
     <script src="p5.js"></script>
     <script src="p5.dom.js"></script>
     <script src="sketch.js"></script>
-    <script src="sketch.js"></script>
-
 </header>
 
 <body>
     <div id="toolbox">
         <div id="connected">
-            <div id="colors">
-                <div id="text">Choose Color</div>
+            <div id="toolbox1">
+                <div>Color</div><br>
                 <input type="color" id="picker">
-                <div id="text">Eraser</div>
-                <div id="white" onclick="changeColor(this)" style="background:white"></div>
-                <input type="button" id="btnErase" value="erase all">
+                <div id="info"></div>
             </div>
-            <div id="lines">
-                <div id="text">linewidth:</div>
+            <div id="toolbox3">
+                <div>linewidth:</div>
                 <input type="range" id="slider" min="1" max="50" step="1" value="2">
             </div>
+            <div id="toolbox2">
+                <input type="button" id="btnErase" value="erase all">
+            </div><br>
             <input type="button" id="saveIMG" value="Save Image">
-            <div id="info"></div>
+
         </div>
         <div id="notConnected">
             login: <input type="text" placeholder="your name here" id="login">
